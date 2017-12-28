@@ -21,7 +21,7 @@
     <meta name="msapplication-tap-highlight" content="no">
 
     <!-- Your app title -->
-    <title>My App</title>
+    <title>Open Tire Pyrometer</title>
 
     <!-- This template defaults to the iOS CSS theme. To support both iOS and material design themes, see the Framework7 Tutorial at the link below:
         http://www.idangero.us/framework7/tutorials/maintain-both-ios-and-material-themes-in-single-app.html
@@ -54,7 +54,7 @@
             <div class="navbar">
                 <div class="navbar-inner">
                     <!-- We need cool sliding animation on title element, so we have additional "sliding" class -->
-                    <div class="center sliding">Awesome App</div>
+                    <div class="center sliding">Open Tire Pyrometer</div>
                     <div class="right">
                         <!--
                           Right link contains only icon - additional "icon-only" class
@@ -71,9 +71,23 @@
                     <!-- Scrollable page content -->
                     <div class="page-content">
                         <div class="content-block">
-                            <p>Page content goes here</p>
+                            <!-- Page content goes here -->
                             <!-- Link to another page -->
                             <a href="about.html">About app</a>
+                            <div>
+                              <h2>BLE Device Test</h2>
+                              <div id="mainPage">
+                                  <ul id="deviceList">
+                                  </ul>
+                                  <button id="refreshButton">Refresh</button>
+                              </div>
+                              <div id="detailPage">
+                                  <div id="statusDiv">
+                                      Temperature is unknown.
+                                  </div>
+                                  <button id="disconnectButton">Disconnect</button>
+                              </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -91,6 +105,8 @@
 
     <script type="text/javascript" src="cordova.js"></script>
     <script type="text/javascript" src="lib/framework7/js/framework7.min.js"></script>
+    <script type="text/javascript" src="js/fastclick.js"></script>
+    <script type="text/javascript" src="js/disconnector.js"></script>
     <script type="text/javascript" src="js/my-app.js"></script>
 </body>
 

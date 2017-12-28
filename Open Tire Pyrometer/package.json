@@ -1,0 +1,27 @@
+{
+  "name": "com.jenkinsracing.opentirepyrometer",
+  "version": "1.0.0",
+  "displayName": "Open Tire Pyrometer",
+  "cordova": {
+    "platforms": [
+      "browser",
+      "ios",
+      "android"
+    ],
+    "plugins": {
+      "cordova-plugin-whitelist": {},
+      "cordova-plugin-console": {},
+      "cordova-plugin-statusbar": {},
+      "cordova-plugin-ble-central": {}
+    }
+  },
+  "dependencies": {
+    "cordova-android": "^6.3.0",
+    "cordova-browser": "~5.0.2",
+    "cordova-plugin-ble-central": "~1.1.4",
+    "cordova-plugin-console": "~1.0.1",
+    "cordova-plugin-statusbar": "~1.0.1",
+    "cordova-plugin-whitelist": "~1.2.0",
+    "cordova-ios": "~4.5.4"
+  }
+}
