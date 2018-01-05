@@ -8,8 +8,10 @@
 4. On iOS or Android device install PhoneGap Developer app to test  
 5. Navigate to project directory and execute CLI commands listed below  
   
+### Required Plugins:  
+`phonegap plugin add cordova-plugin-whitelist cordova-plugin-statusbar cordova-plugin-console cordova-plugin-ble-central`  
+  
 ### Platforms:  
 `phonegap platform add ios android`  
   
-### Required Plugins:  
-`phonegap plugin add cordova-plugin-ble-central`  
+
