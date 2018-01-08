@@ -44,9 +44,8 @@ myApp.onPageInit('about', function (page) {
 // })
 
 // USER CODE **********************
-var THERMOMETER_SERVICE = '142b8c89-28d2-4196-a978-6fcc64823422';
+var PYROMETER_SERVICE = '142b8c89-28d2-4196-a978-6fcc64823422';
 var DATA_CHARACTERISTIC = '9fe5ea27-1273-47f2-b0a6-abd53bfd3ac6';
-var CONFIGURATION_CHARACTERISTIC = 'f000aa02-0451-4000-b000-000000000000';
 
 // Based on code from http://bit.ly/sensortag-temp
 var toCelsius = function(rawMeasurement) { // raw number should be unsigned 16 bit
@@ -99,17 +98,17 @@ var app = {
         // enable the temperature sensor
         // ble.write(
         //     peripheral.id,
-        //     THERMOMETER_SERVICE,
+        //     PYROMETER_SERVICE,
         //     CONFIGURATION_CHARACTERISTIC,
         //     new Uint8Array([1]).buffer,
         //     app.showDetailPage,
         //     app.onError
         // );
 
-        // subscribe to be notified when the button state changes
+        // subscribe to be notified when the pyrometer state changes
         ble.startNotification(
             peripheral.id,
-            THERMOMETER_SERVICE,
+            PYROMETER_SERVICE,
             DATA_CHARACTERISTIC,
             app.onTemperatureChange,
             app.onError
@@ -119,18 +118,17 @@ var app = {
         // expecting 2 unsigned 16 bit values
         var data = new Uint8Array(buffer);
 
-        var rawInfraredTemp = data[0];
-        var rawAmbientTemp = data[1];
+        var pyroStatus = data[0];
+        var PyroTemp = buffer.readUint16LE(1) //data[1];
 
-        var unit = 'F';
-        var infraredTemp = toFahrenheit(rawInfraredTemp);
-        var ambientTemp = toFahrenheit(rawAmbientTemp);
+        var unit = 'C';
+        var measuredTemp = PyroTemp / 10;
+
         // var unit = 'C';
         // var infraredTemp = toCelsius(rawInfraredTemp);
         // var ambientTemp = toCelsius(rawAmbientTemp);
 
-        var message = 'Infrared: ' + infraredTemp.toFixed(1) + ' &deg;' + unit + '<br/>' +
-                      'Ambient:  ' + ambientTemp.toFixed(1) + ' &deg;' + unit + '<br/>';
+        var message = 'Pyrometer: ' + measuredTemp.toFixed(1) + ' &deg;' + unit + '<br/>';
 
         statusDiv.innerHTML = message;
 
