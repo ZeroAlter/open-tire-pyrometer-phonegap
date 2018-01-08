@@ -12,9 +12,9 @@ var mainView = myApp.addView('.view-main', {
 });
 
 // Handle Cordova Device Ready Event
-$$(document).on('deviceready', function() {
-    console.log("Device is ready!");
-});
+// $$(document).on('deviceready', function() {
+//     console.log("Device is ready!");
+// });
 
 
 // Now we need to run the code that will be executed only for About page.
@@ -44,8 +44,8 @@ myApp.onPageInit('about', function (page) {
 // })
 
 // USER CODE **********************
-var THERMOMETER_SERVICE = 'f000aa00-0451-4000-b000-000000000000';
-var DATA_CHARACTERISTIC = 'f000aa01-0451-4000-b000-000000000000';
+var THERMOMETER_SERVICE = '142b8c89-28d2-4196-a978-6fcc64823422';
+var DATA_CHARACTERISTIC = '9fe5ea27-1273-47f2-b0a6-abd53bfd3ac6';
 var CONFIGURATION_CHARACTERISTIC = 'f000aa02-0451-4000-b000-000000000000';
 
 // Based on code from http://bit.ly/sensortag-temp
@@ -73,11 +73,13 @@ var app = {
     },
     onDeviceReady: function() {
         FastClick.attach(document.body); // https://github.com/ftlabs/fastclick
+        statusDivMain.innerHTML = "Scanning for BLE Devices";
         app.refreshDeviceList();
     },
     refreshDeviceList: function() {
         deviceList.innerHTML = ''; // empty the list
-        ble.scan(['AA80'], 5, app.onDiscoverDevice, app.onError);
+        statusDivMain.innerHTML = "Scanning for BLE Devices - Refresh";
+        ble.scan([], 5, app.onDiscoverDevice, app.onError);
     },
     onDiscoverDevice: function(device) {
         var listItem = document.createElement('li');
@@ -95,14 +97,14 @@ var app = {
         app.peripheral = peripheral;
 
         // enable the temperature sensor
-        ble.write(
-            peripheral.id,
-            THERMOMETER_SERVICE,
-            CONFIGURATION_CHARACTERISTIC,
-            new Uint8Array([1]).buffer,
-            app.showDetailPage,
-            app.onError
-        );
+        // ble.write(
+        //     peripheral.id,
+        //     THERMOMETER_SERVICE,
+        //     CONFIGURATION_CHARACTERISTIC,
+        //     new Uint8Array([1]).buffer,
+        //     app.showDetailPage,
+        //     app.onError
+        // );
 
         // subscribe to be notified when the button state changes
         ble.startNotification(
@@ -115,7 +117,7 @@ var app = {
     },
     onTemperatureChange: function(buffer) {
         // expecting 2 unsigned 16 bit values
-        var data = new Uint16Array(buffer);
+        var data = new Uint8Array(buffer);
 
         var rawInfraredTemp = data[0];
         var rawAmbientTemp = data[1];
