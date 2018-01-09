@@ -12,9 +12,9 @@ var mainView = myApp.addView('.view-main', {
 });
 
 // Handle Cordova Device Ready Event
-$$(document).on('deviceready', function() {
-    console.log("Device is ready!");
-});
+// $$(document).on('deviceready', function() {
+//     console.log("Device is ready!");
+// });
 
 
 // Now we need to run the code that will be executed only for About page.
@@ -44,18 +44,10 @@ myApp.onPageInit('about', function (page) {
 // })
 
 // USER CODE **********************
-var THERMOMETER_SERVICE = 'f000aa00-0451-4000-b000-000000000000';
-var DATA_CHARACTERISTIC = 'f000aa01-0451-4000-b000-000000000000';
-var CONFIGURATION_CHARACTERISTIC = 'f000aa02-0451-4000-b000-000000000000';
+var PYROMETER_SERVICE = '142b8c89-28d2-4196-a978-6fcc64823422';
+var PYROMETER_MEASUREMENT_CHARACTERISTIC = '9fe5ea27-1273-47f2-b0a6-abd53bfd3ac6';
 
-// Based on code from http://bit.ly/sensortag-temp
-var toCelsius = function(rawMeasurement) { // raw number should be unsigned 16 bit
-    var SCALE_LSB = 0.03125;
-    return (rawMeasurement >> 2) * SCALE_LSB;
-};
-
-var toFahrenheit = function(rawMeasurement) {
-    var celsius = toCelsius(rawMeasurement);
+var toFahrenheit = function(celsius) {
     return (celsius * 1.8 + 32.0);
 };
 
@@ -73,11 +65,13 @@ var app = {
     },
     onDeviceReady: function() {
         FastClick.attach(document.body); // https://github.com/ftlabs/fastclick
+        debugDiv.innerHTML = "Scanning for BLE Devices";
         app.refreshDeviceList();
     },
     refreshDeviceList: function() {
         deviceList.innerHTML = ''; // empty the list
-        ble.scan(['AA80'], 5, app.onDiscoverDevice, app.onError);
+        debugDiv.innerHTML = "Scanning for BLE Devices - Refresh";
+        ble.scan([], 5, app.onDiscoverDevice, app.onError);
     },
     onDiscoverDevice: function(device) {
         var listItem = document.createElement('li');
@@ -89,46 +83,36 @@ var app = {
     },
     connect: function(e) {
         var deviceId = e.target.dataset.deviceId;
+        debugDiv.innerHTML = deviceId;
         ble.connect(deviceId, app.onConnect, app.onError);
     },
     onConnect: function(peripheral) {
+        debugDiv.innerHTML = peripheral.id;
         app.peripheral = peripheral;
 
-        // enable the temperature sensor
-        ble.write(
-            peripheral.id,
-            THERMOMETER_SERVICE,
-            CONFIGURATION_CHARACTERISTIC,
-            new Uint8Array([1]).buffer,
-            app.showDetailPage,
-            app.onError
-        );
-
-        // subscribe to be notified when the button state changes
+        // subscribe to be notified when the pyrometer state changes
         ble.startNotification(
             peripheral.id,
-            THERMOMETER_SERVICE,
-            DATA_CHARACTERISTIC,
+            PYROMETER_SERVICE,
+            PYROMETER_MEASUREMENT_CHARACTERISTIC,
             app.onTemperatureChange,
             app.onError
         );
+        // show the measurement display
+        app.showDetailPage();
     },
     onTemperatureChange: function(buffer) {
-        // expecting 2 unsigned 16 bit values
-        var data = new Uint16Array(buffer);
+        // expecting 1 unsigned 16 bit value and 1 signed 16 bit value
+        // for now just parse them into signed Int
+        var data = new Int16Array(buffer);
+        debugDiv.innerHTML = data; // display the raw data for debugging
 
-        var rawInfraredTemp = data[0];
-        var rawAmbientTemp = data[1];
+        var pyroStatus = data[0];
 
-        var unit = 'F';
-        var infraredTemp = toFahrenheit(rawInfraredTemp);
-        var ambientTemp = toFahrenheit(rawAmbientTemp);
-        // var unit = 'C';
-        // var infraredTemp = toCelsius(rawInfraredTemp);
-        // var ambientTemp = toCelsius(rawAmbientTemp);
+        var unit = 'C';
+        var measuredTempC = data[1] / 10;
 
-        var message = 'Infrared: ' + infraredTemp.toFixed(1) + ' &deg;' + unit + '<br/>' +
-                      'Ambient:  ' + ambientTemp.toFixed(1) + ' &deg;' + unit + '<br/>';
+        var message = 'Pyrometer: ' + measuredTempC.toFixed(1) + ' &deg;' + unit + '<br/>';
 
         statusDiv.innerHTML = message;
 
