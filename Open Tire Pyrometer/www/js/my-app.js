@@ -45,16 +45,9 @@ myApp.onPageInit('about', function (page) {
 
 // USER CODE **********************
 var PYROMETER_SERVICE = '142b8c89-28d2-4196-a978-6fcc64823422';
-var DATA_CHARACTERISTIC = '9fe5ea27-1273-47f2-b0a6-abd53bfd3ac6';
+var PYROMETER_MEASUREMENT_CHARACTERISTIC = '9fe5ea27-1273-47f2-b0a6-abd53bfd3ac6';
 
-// Based on code from http://bit.ly/sensortag-temp
-var toCelsius = function(rawMeasurement) { // raw number should be unsigned 16 bit
-    var SCALE_LSB = 0.03125;
-    return (rawMeasurement >> 2) * SCALE_LSB;
-};
-
-var toFahrenheit = function(rawMeasurement) {
-    var celsius = toCelsius(rawMeasurement);
+var toFahrenheit = function(celsius) {
     return (celsius * 1.8 + 32.0);
 };
 
@@ -72,12 +65,12 @@ var app = {
     },
     onDeviceReady: function() {
         FastClick.attach(document.body); // https://github.com/ftlabs/fastclick
-        statusDivMain.innerHTML = "Scanning for BLE Devices";
+        debugDiv.innerHTML = "Scanning for BLE Devices";
         app.refreshDeviceList();
     },
     refreshDeviceList: function() {
         deviceList.innerHTML = ''; // empty the list
-        statusDivMain.innerHTML = "Scanning for BLE Devices - Refresh";
+        debugDiv.innerHTML = "Scanning for BLE Devices - Refresh";
         ble.scan([], 5, app.onDiscoverDevice, app.onError);
     },
     onDiscoverDevice: function(device) {
@@ -90,45 +83,36 @@ var app = {
     },
     connect: function(e) {
         var deviceId = e.target.dataset.deviceId;
+        debugDiv.innerHTML = deviceId;
         ble.connect(deviceId, app.onConnect, app.onError);
     },
     onConnect: function(peripheral) {
+        debugDiv.innerHTML = peripheral.id;
         app.peripheral = peripheral;
-
-        // enable the temperature sensor
-        // ble.write(
-        //     peripheral.id,
-        //     PYROMETER_SERVICE,
-        //     CONFIGURATION_CHARACTERISTIC,
-        //     new Uint8Array([1]).buffer,
-        //     app.showDetailPage,
-        //     app.onError
-        // );
 
         // subscribe to be notified when the pyrometer state changes
         ble.startNotification(
             peripheral.id,
             PYROMETER_SERVICE,
-            DATA_CHARACTERISTIC,
+            PYROMETER_MEASUREMENT_CHARACTERISTIC,
             app.onTemperatureChange,
             app.onError
         );
+        // show the measurement display
+        app.showDetailPage();
     },
     onTemperatureChange: function(buffer) {
-        // expecting 2 unsigned 16 bit values
-        var data = new Uint8Array(buffer);
+        // expecting 1 unsigned 16 bit value and 1 signed 16 bit value
+        // for now just parse them into signed Int
+        var data = new Int16Array(buffer);
+        debugDiv.innerHTML = data; // display the raw data for debugging
 
         var pyroStatus = data[0];
-        var PyroTemp = buffer.readUint16LE(1) //data[1];
 
         var unit = 'C';
-        var measuredTemp = PyroTemp / 10;
+        var measuredTempC = data[1] / 10;
 
-        // var unit = 'C';
-        // var infraredTemp = toCelsius(rawInfraredTemp);
-        // var ambientTemp = toCelsius(rawAmbientTemp);
-
-        var message = 'Pyrometer: ' + measuredTemp.toFixed(1) + ' &deg;' + unit + '<br/>';
+        var message = 'Pyrometer: ' + measuredTempC.toFixed(1) + ' &deg;' + unit + '<br/>';
 
         statusDiv.innerHTML = message;
 
